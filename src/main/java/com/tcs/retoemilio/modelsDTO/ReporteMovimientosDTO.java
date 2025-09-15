@@ -8,6 +8,7 @@ public class ReporteMovimientosDTO {
     public String cliente;
     public String numeroCuenta;
     public String tipo;
+    public String tipoMovimiento;
     public float saldoInicial;
     public String estado;
     public float movimiento;

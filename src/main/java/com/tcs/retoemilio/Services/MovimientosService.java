@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,15 @@ public class MovimientosService {
         LocalDateTime inicio = fechaInicio.atStartOfDay();
         LocalDateTime fin = fechaFin.atTime(23, 59, 59);
         List<Movimientos> arrayMovimientos = movimientosRepo.findAll();
+        arrayMovimientos = arrayMovimientos.stream()
+                .sorted(
+                        Comparator.comparing((Movimientos m) -> m.getCuenta().getPersona().getNombre()) // primero nombre asc
+                                .thenComparing(Movimientos::getId) // luego id asc
+                )
+                .toList();
         List<ReporteMovimientosDTO> reporteArray = new ArrayList();
 
+        int countMovimiento = 0;
         for (Movimientos mov: arrayMovimientos) {
             LocalDateTime obtenerFecha = mov.getFechaMovimiento();
 
@@ -46,16 +54,26 @@ public class MovimientosService {
                 ReporteMovimientosDTO reporteObjeto = new ReporteMovimientosDTO();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String fechaFormateada = mov.getFechaMovimiento().format(formatter);
+                float saldoInicial = 0;
+
+                if (countMovimiento != 0 && 
+                    arrayMovimientos.get(countMovimiento-1).getCuenta().
+                        getPersona().getNombre().equalsIgnoreCase(mov.getCuenta().getPersona().getNombre())) {
+                            saldoInicial = arrayMovimientos.get(countMovimiento-1).getSaldo();
+                        } 
+
                 reporteObjeto.setFechaMovimiento(fechaFormateada);
                 reporteObjeto.setCliente(mov.getCuenta().getPersona().getNombre());
                 reporteObjeto.setNumeroCuenta(mov.getCuenta().getNumero_cuenta());
                 reporteObjeto.setTipo(mov.getCuenta().getTipo_cuenta());
-                reporteObjeto.setSaldoInicial(mov.getCuenta().getSaldo_inicial());
+                reporteObjeto.setTipoMovimiento(mov.getTipoMovimiento());
+                reporteObjeto.setSaldoInicial(saldoInicial);
                 reporteObjeto.setEstado(mov.getCuenta().getEstado());
                 reporteObjeto.setMovimiento(mov.getValor());
                 reporteObjeto.setSaldoDisponible(mov.getSaldo());
                 reporteArray.add(reporteObjeto);
             }
+            countMovimiento += 1;
         }
         return reporteArray;
     }
@@ -67,9 +85,11 @@ public class MovimientosService {
         return movimiento;
     }
 
-    public Movimientos generarMovimiento(CrearMovimientoDTO movimientoDTO) {
+    public ReporteMovimientosDTO generarMovimiento(CrearMovimientoDTO movimientoDTO) {
         Cuenta cuenta = cuentaRepo.findByPersona_Identificacion(movimientoDTO.getIdentificacion())
             .orElseThrow(() -> new RuntimeException("Cuenta no encontrada"));
+
+        float saldoInicial = cuenta.getSaldo_inicial();
 
         if (cuenta.getSaldo_inicial() == 0 && 
             movimientoDTO.getTipoMovimiento().equalsIgnoreCase("RETIRO")) 
@@ -99,6 +119,24 @@ public class MovimientosService {
         cuenta.setSaldo_inicial(actualizarSaldo);
         cuentaRepo.save(cuenta);
 
-        return movimientosRepo.save(movimiento);
+        movimientosRepo.save(movimiento);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+
+        String fechaFormateada = now.format(formatter);
+        
+        ReporteMovimientosDTO reporteDTO = new ReporteMovimientosDTO();
+        reporteDTO.setFechaMovimiento(fechaFormateada);
+        reporteDTO.setCliente(cuenta.getPersona().getNombre());
+        reporteDTO.setNumeroCuenta(cuenta.getNumero_cuenta());
+        reporteDTO.setTipo(cuenta.getTipo_cuenta());
+        reporteDTO.setTipoMovimiento(movimientoDTO.getTipoMovimiento());
+        reporteDTO.setSaldoInicial(saldoInicial);
+        reporteDTO.setEstado(cuenta.getEstado());
+        reporteDTO.setMovimiento(valor);
+        reporteDTO.setSaldoDisponible(actualizarSaldo);
+
+        return reporteDTO;
     }
 }

@@ -15,6 +15,7 @@ import com.tcs.retoemilio.Excepciones.FondosInsuficientesExcepcion;
 import com.tcs.retoemilio.Models.Movimientos;
 import com.tcs.retoemilio.Services.MovimientosService;
 import com.tcs.retoemilio.modelsDTO.CrearMovimientoDTO;
+import com.tcs.retoemilio.modelsDTO.ReporteMovimientosDTO;
 
 @RestController
 public class F2F3Controller {
@@ -33,8 +34,9 @@ public class F2F3Controller {
         Map<String, Object> response = new HashMap<>();
 
         try{
-            movimientosService.generarMovimiento(movimientoDTO);
+            ReporteMovimientosDTO reporteDTO = movimientosService.generarMovimiento(movimientoDTO);
             response.put("mensaje", "Movimiento Generado");
+            response.put("resultado", reporteDTO);
             response.put("codigo", 200);
         } catch (FondosInsuficientesExcepcion e) {
             response.put("mensaje", "Error: " + e.getMessage());
