@@ -56,7 +56,8 @@ public class F1Controller {
         Map<String, Object> response = new HashMap<>();
         try{
             clienteService.crearCliente(clienteDTO);
-            response.put("mensaje", "El cliente se registró con éxito");
+            response.put("mensaje", "El cliente con el num de identificacion "+ clienteDTO.getIdentificacion() +" se registró con éxito");
+            response.put("datos", clienteDTO);
             response.put("codigo", 200);
         } catch (FormatoNumericoExcepcion e) {
             response.put("mensaje", "Error: " + e.getMessage());
@@ -73,7 +74,8 @@ public class F1Controller {
         Map<String, Object> response = new HashMap<>();
         try{
             clienteService.editarCliente(clienteDTO, identificacion);
-            response.put("mensaje", "El cliente se editó con éxito");
+            response.put("mensaje", "El cliente con el num de identificacion "+ identificacion +" se editó con éxito");
+            response.put("datos", clienteDTO);
             response.put("codigo", 200);
         } catch (FormatoNumericoExcepcion e) {
             response.put("mensaje", "Error: " + e.getMessage());
@@ -91,7 +93,7 @@ public class F1Controller {
 
         try{
             clienteService.eliminarCliente(identificacion);
-            response.put("mensaje", "El cliente se eliminó con éxito");
+            response.put("mensaje", "El cliente con el num de identificacion "+ identificacion +" se eliminó con éxito");
             response.put("codigo", 200);
         } catch (RuntimeException e) {
             response.put("mensaje", "Error: " + e.getMessage());
@@ -110,7 +112,8 @@ public class F1Controller {
         Map<String, Object> response = new HashMap<>();
         try{
             cuentaService.crearCuenta(cuentaDTO);
-            response.put("mensaje", "La cuenta se registró con éxito");
+            response.put("mensaje", "La cuenta con el num de identificación "+ cuentaDTO.getIdentificacion() +" se registró con éxito");
+            response.put("datos", cuentaDTO);
             response.put("codigo", 200);
         } catch (RuntimeException e) {
             response.put("mensaje", "Error: " + e.getMessage());
@@ -127,7 +130,8 @@ public class F1Controller {
         Map<String, Object> response = new HashMap<>();
         try{
             cuentaService.editarCuenta(cuentaDTO, identificacion);
-            response.put("mensaje", "La cuenta se editó con éxito");
+            response.put("mensaje", "La cuenta con el num de identificación "+ identificacion +" se editó con éxito");
+            response.put("datos", cuentaDTO);
             response.put("codigo", 200);
         } catch (RuntimeException e) {
             response.put("mensaje", "Error: " + e.getMessage());
@@ -145,7 +149,7 @@ public class F1Controller {
 
         try{
             cuentaService.eliminarCuenta(identificacion);
-            response.put("mensaje", "La cuenta se eliminó con éxito");
+            response.put("mensaje", "La cuenta con el num de identificación "+ identificacion +" se eliminó con éxito");
             response.put("codigo", 200);
         } catch (RuntimeException e) {
             response.put("mensaje", "Error: " + e.getMessage());
